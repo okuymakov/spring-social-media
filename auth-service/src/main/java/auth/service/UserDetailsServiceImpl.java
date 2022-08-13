@@ -1,7 +1,7 @@
 package auth.service;
 
 import auth.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -14,10 +14,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -26,9 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
         try {
             user.getRoles()
-                    .forEach(role -> {
-                        grantedAuthorities.add(new SimpleGrantedAuthority(role.name()));
-                    });
+                    .forEach(role -> grantedAuthorities.add(new SimpleGrantedAuthority(role.name())));
             return new User(user.getUsername(), user.getPassword(), grantedAuthorities);
         } catch (Exception e) {
             e.printStackTrace();

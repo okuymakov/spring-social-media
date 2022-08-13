@@ -5,18 +5,22 @@ import auth.dto.RegisterRequest;
 import auth.exception.InvalidUsernameOrPasswordException;
 import auth.exception.UserAlreadyExistsException;
 import auth.model.Role;
-import auth.utils.JwtUtils;
 import auth.repository.UserRepository;
+import auth.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,22 +30,28 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
 
-    private final UserDetailsServiceImpl userDetailsService;
-
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
     public String login(LoginRequest loginRequest) {
         try {
             var usernamePasswordAuthenticationToken =
                     new UsernamePasswordAuthenticationToken(loginRequest.username, loginRequest.password);
-            authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-            return jwtUtils.generateJwtToken(loginRequest.username);
+            var auth = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+            var roles = auth.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toSet());
+            var claims = Map.of("roles", roles);
+            logger.info("{} logged in successfully!", loginRequest.username);
+            return jwtUtils.generateJwtToken(loginRequest.username, new HashMap<>(claims));
         } catch (AuthenticationException e) {
+            logger.error("Invalid username/password supplied!");
             throw new InvalidUsernameOrPasswordException("Invalid username/password supplied");
         }
     }
 
     public String register(RegisterRequest registerRequest) {
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
+            logger.error("{} already exist!", registerRequest.username);
             throw new UserAlreadyExistsException("User already exist");
         }
         auth.model.User user = auth.model.User.builder()
@@ -50,18 +60,8 @@ public class UserService {
                 .roles(Set.of(Role.USER))
                 .build();
         userRepository.save(user);
-        String jwt = jwtUtils.generateJwtToken(registerRequest.username);
-        return jwt;
-    }
-
-    public void authenticate(String accessToken) {
-        accessToken = accessToken.substring("Bearer ".length());
-        if (accessToken != null && jwtUtils.validateJwtToken(accessToken)) {
-            String username = jwtUtils.getUserNameFromJwtToken(accessToken);
-            User user = (User) userDetailsService.loadUserByUsername(username);
-            var usernamePasswordAuthenticationToken =
-                    new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-            authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-        }
+        var claims = Map.of("roles", (Object) user.getRoles());
+        logger.info("{} registered successfully!", registerRequest.username);
+        return jwtUtils.generateJwtToken(registerRequest.username, new HashMap<>(claims));
     }
 }

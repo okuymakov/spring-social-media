@@ -23,7 +23,7 @@ spring:
           predicates:
             - Path=/articles/**
           filters:
-            - AuthFilter
+            - Auth
 
 eureka:
   client:
