@@ -1,25 +1,27 @@
 package com.gateway.config;
 
-import com.gateway.filter.AuthFilter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gateway.route.RouteLocator;
-import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
+import com.gateway.filter.AuthGatewayFilterFactory;
+import com.gateway.utils.JwtUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 
 
 @Configuration
+@EnableWebFluxSecurity
 public class GatewayConfig {
-
-    @Autowired
-    private AuthFilter filter;
+    @Bean
+    AuthGatewayFilterFactory getAuthGatewayFilterFactory() {
+        return new AuthGatewayFilterFactory();
+    }
 
     @Bean
-    public RouteLocator routes(RouteLocatorBuilder builder) {
-        return builder.routes().route("auth", r -> r.path("/auth/**").filters(f -> f.filter(filter)).uri("lb://auth"))
-                .route("alert", r -> r.path("/alert/**").filters(f -> f.filter(filter)).uri("lb://alert"))
-                .route("echo", r -> r.path("/echo/**").filters(f -> f.filter(filter)).uri("lb://echo"))
-                .route("hello", r -> r.path("/hello/**").filters(f -> f.filter(filter)).uri("lb://hello")).build();
+    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable);
+        return http.build();
     }
 
 }
