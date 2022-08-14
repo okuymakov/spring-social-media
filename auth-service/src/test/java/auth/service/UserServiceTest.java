@@ -27,17 +27,17 @@ class UserServiceTest {
     @Test
     void shouldReturnRolesOfLoggedInUser() {
         var jwt = userService.login(new LoginRequest("username","qwerty12345"));
-        var claim = jwtUtils.getClaims(jwt);
+        var claims = jwtUtils.getClaims(jwt);
         var expected = List.of(Role.USER.name());
-        assertEquals(expected, claim.get("roles"));
+        assertEquals(expected, claims.get("roles"));
     }
 
     @Test
     void shouldReturnRolesOfRegisteredUser() {
         var jwt = userService.register(new RegisterRequest("username5","qwerty12345"));
         userService.login(new LoginRequest("username5","qwerty12345"));
-        var claim = jwtUtils.getClaims(jwt);
+        var claims = jwtUtils.getClaims(jwt);
         var expected = List.of(Role.USER.name());
-        assertEquals(expected, claim.get("roles"));
+        assertEquals(expected, claims.get("roles"));
     }
 }
