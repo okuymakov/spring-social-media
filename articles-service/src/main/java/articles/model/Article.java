@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
@@ -18,12 +20,25 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Article {
-    public @MongoId ObjectId id;
-    public String title;
-    public String content;
-    public String theme;
-    public List<String> tags;
-    public String username;
+
+    private @MongoId ObjectId id;
+
+    @Indexed(unique = true)
+    private String title;
+
+    private String username;
+
+    private String content;
+
+    private String theme;
+
+    private List<String> tags;
+
+    private boolean isPrivate;
+
     @CreatedDate
-    public Date createdDate;
+    private Date createdDate;
+
+    @LastModifiedDate
+    private Date updatedDate;
 }
