@@ -1,0 +1,30 @@
+package subscriptions.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
+
+import java.util.Date;
+
+@Document(collection = "subscriptions")
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Subscription {
+
+    private @MongoId ObjectId id;
+
+    private String username;
+
+    private String subscriber;
+
+    @CreatedDate
+    private Date createdDate;
+
+}
