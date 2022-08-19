@@ -28,20 +28,23 @@ public class ArticlesController {
     }
 
     @GetMapping("/get/q")
-    public ResponseEntity<List<Article>> getByThemeAndTags(@RequestParam String theme, @RequestParam List<String> tags) {
+    public ResponseEntity<List<Article>> getByThemeAndTags(
+            @RequestParam(required = false) String theme,
+            @RequestParam(defaultValue = "") List<String> tags
+    ) {
         List<Article> articles = repo.findByThemeAndTags(theme, tags);
         return ResponseEntity.ok().body(articles);
     }
 
-    @GetMapping("/get/q")
-    public ResponseEntity<Article> getByTitle(@RequestParam String title) {
+    @GetMapping("/get/by-title/{title}")
+    public ResponseEntity<Article> getByTitle(@PathVariable String title) {
         Article article = repo.findByTitle(title);
         return ResponseEntity.ok().body(article);
     }
 
-    @GetMapping("/{username}/")
+    @GetMapping("/{username}")
     public ResponseEntity<List<Article>> getByUsername(
-            @RequestHeader("username") Optional<String> curUsername,
+            @RequestHeader(value = "username") Optional<String> curUsername,
             @PathVariable String username
     ) {
         List<Article> articles;
