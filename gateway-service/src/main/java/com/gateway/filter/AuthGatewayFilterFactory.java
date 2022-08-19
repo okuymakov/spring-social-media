@@ -1,6 +1,9 @@
 package com.gateway.filter;
 
 import com.gateway.utils.JwtUtils;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -47,7 +50,7 @@ public class AuthGatewayFilterFactory extends
                         .get(0)
                         .substring("Bearer ".length());
 
-                if(!jwtUtils.validateToken(token)) {
+                if (!jwtUtils.validateToken(token)) {
                     response.setStatusCode(HttpStatus.BAD_REQUEST);
                     return response.setComplete();
                 }
@@ -73,18 +76,15 @@ public class AuthGatewayFilterFactory extends
         };
     }
 
+    @Override
+    public List<String> shortcutFieldOrder() {
+        return List.of("role");
+    }
 
-    //@AllArgsConstructor
-    //@Getter
+    @NoArgsConstructor
+    @Getter
+    @Setter
     public static class Config {
-        private final String role;
-
-        public Config(String role) {
-            this.role = role;
-        }
-
-        public String getRole() {
-            return role;
-        }
+        private String role;
     }
 }
