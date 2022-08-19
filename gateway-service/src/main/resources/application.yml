@@ -14,18 +14,45 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-        - id: auth-service-id
+        - id: auth-service-open-access-route
           uri: lb://auth-service
           predicates:
             - Path=/auth/**
-        - id: articles-service-id
+
+        - id: articles-service-user-access-route
           uri: lb://articles-service
           predicates:
-            - Path=/articles/**
+            - Path=/articles/*,/articles/delete/*
+            - Method=POST,PUT,DELETE
           filters:
             - Auth=USER
 
+        - id: articles-service-admin-access-route
+          uri: lb://articles-service
+          predicates:
+            - Path=/articles/admin/**
+          filters:
+            - Auth=ADMIN
 
+        - id: articles-service-open-access-route
+          uri: lb://articles-service
+          predicates:
+            - Path=/articles/**
+            - Method=GET
+
+        - id: comments-service-user-access-route
+          uri: lb://comments-service
+          predicates:
+            - Path=/comments/**
+          filters:
+            - Auth=USER
+
+        - id: subscriptions-service-user-access-route
+          uri: lb://subscriptions-service
+          predicates:
+            - Path=/subscriptions/**
+          filters:
+            - Auth=USER
 eureka:
   client:
     serviceUrl:
